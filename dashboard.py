@@ -2,10 +2,17 @@ import streamlit as st
 import pandas as pd
 import json
 import os
-from analyse import download_pcap  # Importer uniquement la fonction de téléchargement
+from analyse import download_pcap 
 
 # Chemin du fichier JSON
 JSON_FILE = "data/rapport_analyse.json"
+
+# Affichage du logo en haut à gauche de la page principale
+col1, col2 = st.columns([1, 4])
+with col1:
+    st.image("assets/logo.png", width=100)
+with col2:
+    st.title("Dashboard d'Analyse des Données")
 
 # Charger les données du fichier JSON
 def load_json_data():
@@ -20,8 +27,7 @@ def load_json_data():
         st.error(f"Erreur lors du chargement du fichier {JSON_FILE}.")
         return None
 
-# Interface Streamlit
-st.title("Dashboard d'Analyse des Données")
+
 
 # Bouton pour télécharger le fichier .pcap
 if st.button("Télécharger le fichier .pcap"):
