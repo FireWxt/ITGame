@@ -4,16 +4,19 @@ import requests
 from collections import defaultdict
 from dotenv import load_dotenv
 from datetime import datetime
-
+from utils.get_pcap import get_pcap
 from utils.mapping import get_mitre_signatures
 from utils.ip_check import check_ip_abuse, check_ip_virustotal
 
 # Charger les variables d’environnement (.env)
 load_dotenv()
 API_KEY = os.getenv('ABUSEIPDB_API_KEY')
+API_KEY_VT = os.getenv('VT_API_KEY')
+
+get_pcap()
 
 # Fichier à analyser
-PCAP_FILE = 'logs/capture.pcap'
+PCAP_FILE = './logs/capture.pcap'
 LOCAL_NETWORK = "172."
 VERBOSE = False
 
@@ -37,7 +40,9 @@ signatures = get_mitre_signatures()
 capture = pyshark.FileCapture(PCAP_FILE, use_json=True, include_raw=True)
 
 
+
 for packet in capture:
+    query_name = ''
     stats['total_packets'] += 1
     try:
         ip_src = packet.ip.src
@@ -76,6 +81,8 @@ for packet in capture:
         if proto == "DNS" and hasattr(packet, 'dns'):
             query_name = packet.dns.qry_name if hasattr(packet.dns, 'qry_name') else ''
     
+        
+        # Vérification de la longueur de la requête DNS
         if query_name:
             if len(query_name) > 30 and any(ext in query_name for ext in ['.xyz', '.top', '.tk']):
                 stats['mitre_mapping']["Command and Control"].append((time, ip_src, proto))
@@ -105,6 +112,9 @@ for ip in stats['unique_ips']:
                 'vt_score': vt_score
             }
             print(f"IP suspecte : {ip} | Abuse: {abuse_score}, VirusTotal: {vt_score}")
+
+print("\n[DEBUG] Contenu final de stats['ip_alerts']:")
+print(stats['ip_alerts'])
 
 # Rapport console
 print("\nRapport Synthétique")
@@ -143,6 +153,8 @@ def generate_report(stats, filename="data/rapport_analyse.md"):
         f.write("## IPs suspectes\n")
         for ip, scores in stats['ip_alerts'].items():
             f.write(f"- {ip} : Abuse = {scores['abuse_score']}, VT = {scores['vt_score']}\n")
+        f.write(f"### Nombre total d'IP suspectes : {len(stats['ip_alerts'])}\n\n")
+
 
 # Enregistrer le rapport
 generate_report(stats)
