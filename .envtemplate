@@ -1,0 +1,2 @@
+export ABUSEIPDB_API_KEY="la clé abuseipdb"
+export API_KEY_VT="la clé de Virustotal"

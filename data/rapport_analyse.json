@@ -1,0 +1,73 @@
+{
+    "date_generation": "2025-04-01T11:42:59.618844",
+    "fichier_pcap": "logs/capture.pcap",
+    "statistiques": {
+        "total_paquets": 3690,
+        "ips_uniques": [
+            "192.241.220.183",
+            "224.0.0.252",
+            "255.255.255.255",
+            "172.17.8.109",
+            "172.17.8.255",
+            "239.255.255.250",
+            "23.50.224.8",
+            "224.0.0.22",
+            "91.121.30.169",
+            "216.239.94.252",
+            "172.17.8.2"
+        ],
+        "nombre_ips_uniques": 11,
+        "echouements_kerberos": 0,
+        "telechargements_binaire_http": 0,
+        "tcp_resets": 0,
+        "ips_suspectes": [],
+        "nombre_ips_suspectes": 0
+    },
+    "mitre_attacks": {},
+    "ports_analyse": [
+        {
+            "port": 443,
+            "count": 1717
+        },
+        {
+            "port": 3389,
+            "count": 846
+        },
+        {
+            "port": 49214,
+            "count": 783
+        },
+        {
+            "port": 49226,
+            "count": 562
+        },
+        {
+            "port": 49230,
+            "count": 371
+        },
+        {
+            "port": 49227,
+            "count": 333
+        },
+        {
+            "port": 49228,
+            "count": 282
+        },
+        {
+            "port": 88,
+            "count": 262
+        },
+        {
+            "port": 49207,
+            "count": 187
+        },
+        {
+            "port": 8000,
+            "count": 187
+        }
+    ],
+    "configuration": {
+        "reseau_local": "172.",
+        "analyse_verbose": false
+    }
+}
