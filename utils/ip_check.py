@@ -1,6 +1,7 @@
 import requests
 import os
 from dotenv import load_dotenv
+import time
 
 # Chargement des clés API depuis le fichier .env
 load_dotenv()
@@ -16,6 +17,7 @@ def check_ip_abuseipdb(ip):
     Vérifie la réputation d'une adresse IP via AbuseIPDB.
     Retourne True si le score de confiance en abus est supérieur à 50.
     """
+    #print(f"Using ABUSEIPDB API key: {ABUSEIPDB_API_KEY}")
     headers = {
         'Accept': 'application/json',
         'Key': ABUSEIPDB_API_KEY
@@ -37,17 +39,24 @@ def check_ip_virustotal(ip):
     Vérifie la réputation d'une adresse IP via VirusTotal.
     Retourne True si des détections malveillantes sont signalées.
     """
+    print(f"Using VT API key: {VT_API_KEY}")  # Debug: should print your key, not None
+
     headers = {
+        'Accept': 'application/json',
         "x-apikey": VT_API_KEY
     }
+    result = False
     try:
         response = requests.get(VIRUSTOTAL_URL + ip, headers=headers)
         response.raise_for_status()
         data = response.json()
         malicious = data['data']['attributes']['last_analysis_stats']['malicious']
-        return malicious > 0
-    except Exception:
-        return False
+        result = malicious > 0
+    except Exception as e:
+        result = False
+    time.sleep(20)
+    return result
+
 
 def check_ip_reputation(ip):
     """
