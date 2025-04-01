@@ -1,6 +1,7 @@
 import requests
 import os
 from dotenv import load_dotenv
+import time
 
 # On charge les variables d'env (les clés API)
 load_dotenv()
@@ -56,6 +57,8 @@ def get_virustotal_details(ip):
     Récupère des infos depuis VirusTotal :
       malicious, harmless, suspicious, country, asn, etc.
     """
+    print(f"Using VT API key: {API_KEY_VT}") 
+
     headers = {
         "x-apikey": API_KEY_VT
     }
@@ -68,6 +71,7 @@ def get_virustotal_details(ip):
         "as_owner": None,
         "network": None
     }
+    result = False
     try:
         response = requests.get(VIRUSTOTAL_URL + ip, headers=headers)
         response.raise_for_status()

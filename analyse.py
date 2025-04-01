@@ -3,6 +3,7 @@ import os
 import json
 from datetime import datetime
 from dotenv import load_dotenv
+from utils.get_pcap import get_pcap
 from collections import defaultdict
 from utils.MicrosoftFilter import is_microsoft_ip
 from utils.ip_check import check_ip_reputation
@@ -19,6 +20,8 @@ GEO_DATA = {
 
 # Chargement des variables d'environnement (clés API, etc.)
 load_dotenv()
+#get_pcap()
+
 PCAP_FILE = 'logs/capture.pcap'
 LOCAL_NETWORK_PREFIX = "172."
 VERBOSE = False  # Pour affichage détaillé si besoin

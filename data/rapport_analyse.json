@@ -1,17 +1,31 @@
 {
-    "date_generation": "2025-04-01T15:50:48.612380",
+    "date_generation": "2025-04-01T15:36:43.372882",
     "fichier_pcap": "logs/capture.pcap",
     "statistiques": {
         "total_paquets": 3690,
-        "ips_analysees": 6,
+        "ips_uniques": [
+            "239.255.255.250",
+            "216.239.94.252",
+            "172.17.8.109",
+            "172.17.8.255",
+            "255.255.255.255",
+            "172.17.8.2",
+            "23.50.224.8",
+            "192.241.220.183",
+            "224.0.0.252",
+            "224.0.0.22",
+            "91.121.30.169"
+        ],
+        "nombre_ips_uniques": 11,
         "echouements_kerberos": 0,
         "telechargements_binaires_http": 0,
         "tcp_resets": 0,
         "ips_suspectes": [
+            "239.255.255.250",
             "192.241.220.183",
             "91.121.30.169"
         ],
-        "nombre_ips_suspectes": 2
+        "nombre_ips_suspectes": 3
     },
     "mitre_attacks": {},
     "ports_analyse": [
