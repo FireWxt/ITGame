@@ -1,17 +1,22 @@
 import requests
 import time
+import os
 import threading
+import pyshark
 
 def get_pcap(): 
     url = f"http://93.127.203.48:5000/pcap/latest"
     response = requests.get(url)
-    contenue = response.content
     if response.status_code == 200:
-        with open('logs/capture.pcap', 'wb') as f:
-            f.write(contenue)
-        print("Fichier PCAP téléchargé avec succès.")
+        file_path = os.path.join("logs/", "capture.pcap")
+        with open(file_path, "wb") as f:
+            f.write(response.content)
+        print(f"[PCAP] Fichier PCAP enregistré sous {file_path}")
+        capture = pyshark.FileCapture(file_path, use_json=True)
+        return capture
     else:
-        print("Erreur lors du téléchargement du fichier PCAP.")
+        raise Exception(f"[PCAP] Erreur lors de la récupération du fichier PCAP : {response.status_code}")
+    
 
 
 def pcap_listener(interval=1800):
@@ -24,12 +29,15 @@ def pcap_listener(interval=1800):
 
 if __name__ == "__main__":
 
-    """ Lancement de l'écouteur dans un thread séparé
-    pour éviter de bloquer le programme principal"""
-    listener_thread = threading.Thread(target=pcap_listener, daemon=True)
-    listener_thread.start()
+    pass
+    # """ Lancement de l'écouteur dans un thread séparé
+    # pour éviter de bloquer le programme principal"""
+    # listener_thread = threading.Thread(target=pcap_listener, daemon=True)
+    # listener_thread.start()
 
-    print (print("[PCAP] Listener lancé. Mise à jour toutes les 30 minutes."))
+    # print (print("[PCAP] Listener lancé. Mise à jour toutes les 30 minutes."))
 
-    while True:
-        time.sleep(3600)
+    # while True:
+    #     time.sleep(3600)
+
+
