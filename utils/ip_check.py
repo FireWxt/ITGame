@@ -5,6 +5,7 @@ import time
 
 # On charge les variables d'env (les clés API)
 load_dotenv()
+
 ABUSEIPDB_API_KEY = os.getenv("ABUSEIPDB_API_KEY")
 API_KEY_VT = os.getenv("API_KEY_VT")
 
