@@ -4,8 +4,8 @@ import json
 from datetime import datetime
 from dotenv import load_dotenv
 from collections import defaultdict
-#from utils.get_pcap import get_pcap
-from utils.MicrosoftFilter import is_microsoft_ip
+from utils.get_pcap import get_pcap
+from utils.MicrosoftFilter import  is_microsoft_ip
 from utils.ip_check import check_ip_reputation
 from utils.mitre_mapping import map_event
 from utils.PortAnalyse import analyse_ports
@@ -25,12 +25,11 @@ GEO_DATA = {
 load_dotenv()
 '''
 # Téléchargement du fichier PCAP depuis le serveur distant
-try:
-    get_pcap()
-except Exception as e:
-    print(f"[Erreur] Échec du téléchargement du PCAP : {e}")
-    exit(1)
-'''
+# try:
+#     get_pcap()
+# except Exception as e:
+#     print(f"[Erreur] Échec du téléchargement du PCAP : {e}")
+#     exit(1)
 
 # Chemin du fichier à analyser
 PCAP_FILE = 'logs/capture.pcap'

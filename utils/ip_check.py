@@ -90,7 +90,7 @@ def get_virustotal_details(ip):
 
     except Exception as e:
         print(f"Erreur dans get_virustotal_details pour {ip}: {e}")
-
+    time.sleep(15)  # Respecter la limite de l'API VT (1 requête par 15 secondes)
     return details
 
 def check_ip_details(ip):
