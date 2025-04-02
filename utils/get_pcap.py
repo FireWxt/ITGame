@@ -1,4 +1,6 @@
 import requests
+import time
+import threading
 
 def get_pcap(): 
     url = f"http://93.127.203.48:5000/pcap/latest"
@@ -10,3 +12,24 @@ def get_pcap():
         print("Fichier PCAP téléchargé avec succès.")
     else:
         print("Erreur lors du téléchargement du fichier PCAP.")
+
+
+def pcap_listener(interval=1800):
+    """
+    Fonction pour écouter les paquets sur le réseau et les enregistrer dans un fichier PCAP.
+    """
+    while True:
+        get_pcap()
+        time.sleep(interval)
+
+if __name__ == "__main__":
+
+    """ Lancement de l'écouteur dans un thread séparé
+    pour éviter de bloquer le programme principal"""
+    listener_thread = threading.Thread(target=pcap_listener, daemon=True)
+    listener_thread.start()
+
+    print (print("[PCAP] Listener lancé. Mise à jour toutes les 30 minutes."))
+
+    while True:
+        time.sleep(3600)

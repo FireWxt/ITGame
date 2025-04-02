@@ -5,8 +5,9 @@ import time
 
 # Chargement des clés API depuis le fichier .env
 load_dotenv()
+
 ABUSEIPDB_API_KEY = os.getenv("ABUSEIPDB_API_KEY")
-VT_API_KEY = os.getenv("VIRUSTOTAL_API_KEY")
+VT_API_KEY = os.getenv("VT_API_KEY")
 
 # Configuration des URL d’API
 ABUSEIPDB_URL = "https://api.abuseipdb.com/api/v2/check"
@@ -17,7 +18,7 @@ def check_ip_abuseipdb(ip):
     Vérifie la réputation d'une adresse IP via AbuseIPDB.
     Retourne True si le score de confiance en abus est supérieur à 50.
     """
-    #print(f"Using ABUSEIPDB API key: {ABUSEIPDB_API_KEY}")
+    print(f"Using ABUSEIPDB API key: {ABUSEIPDB_API_KEY}")
     headers = {
         'Accept': 'application/json',
         'Key': ABUSEIPDB_API_KEY
@@ -43,7 +44,7 @@ def check_ip_virustotal(ip):
 
     headers = {
         'Accept': 'application/json',
-        "x-apikey": VT_API_KEY
+        "X-Apikey": VT_API_KEY
     }
     result = False
     try:
@@ -54,7 +55,7 @@ def check_ip_virustotal(ip):
         result = malicious > 0
     except Exception as e:
         result = False
-    time.sleep(20)
+    time.sleep(15)
     return result
 
 

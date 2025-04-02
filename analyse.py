@@ -12,7 +12,7 @@ from utils.PortAnalyse import analyse_ports
 
 # Chargement des variables d'environnement
 load_dotenv()
-#get_pcap()
+get_pcap()
 
 PCAP_FILE = 'logs/capture.pcap'
 LOCAL_NETWORK_PREFIX = "172."
