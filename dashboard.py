@@ -2,17 +2,13 @@ import streamlit as st
 import pandas as pd
 import json
 import os
-from analyse import download_pcap 
+from analyse import download_pcap
+
+# Configuration de la page
+st.set_page_config(page_title="Datalitics", layout="wide")
 
 # Chemin du fichier JSON
 JSON_FILE = "data/rapport_analyse.json"
-
-# Affichage du logo en haut à gauche de la page principale
-col1, col2 = st.columns([1, 4])
-with col1:
-    st.image("assets/logo.png", width=100)
-with col2:
-    st.title("Dashboard d'Analyse des Données")
 
 # Charger les données du fichier JSON
 def load_json_data():
@@ -20,65 +16,67 @@ def load_json_data():
         with open(JSON_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
         return data
-    except FileNotFoundError:
-        st.error(f"Le fichier {JSON_FILE} est introuvable.")
-        return None
-    except json.JSONDecodeError:
-        st.error(f"Erreur lors du chargement du fichier {JSON_FILE}.")
+    except (FileNotFoundError, json.JSONDecodeError):
         return None
 
+# Barre latérale (Sidebar)
+st.sidebar.image("assets/logo.png", width=150)
+st.sidebar.header("Datalitics")
+st.sidebar.button("Import PCAP")
+st.sidebar.markdown("---")
+st.sidebar.button("Overview")
+st.sidebar.button("MITRE ATT&CK")
+st.sidebar.button("Suspicious IPs")
+st.sidebar.button("Report")
 
+# Contenu principal
+st.title("Network Analysis – MITRE ATT&CK")
 
-# Bouton pour télécharger le fichier .pcap
-if st.button("Télécharger le fichier .pcap"):
-    if download_pcap():
-        st.success("Fichier .pcap téléchargé avec succès.")
+# Section Import PCAP avec boutons
+st.subheader("Import PCAP")
+col1, col2 = st.columns([3, 1])
+with col1:
+    st.file_uploader("Choose a PCAP file", type=["pcap"])
+with col2:
+    if st.button("Browse..."):
+        st.success("PCAP file selected.")
 
-# Bouton pour effectuer une nouvelle analyse
-if st.button("Refaire une analyse"):
-    result = os.system("python analyse.py")  # Exécuter le script analyse.py
-    if result == 0:
-        st.success("Nouvelle analyse effectuée avec succès.")
-    else:
-        st.error("Erreur lors de l'exécution de l'analyse.")
-
-# Charger les données du fichier JSON
+# Charger les données
 data = load_json_data()
 if data:
-    # Afficher les statistiques générales
-    st.subheader("Statistiques Générales")
     stats = data.get("statistiques", {})
-    if stats:
-        st.write(f"Total de paquets : {stats.get('total_paquets', 0)}")
-        st.write(f"Nombre d'IPs uniques : {stats.get('nombre_ips_uniques', 0)}")
-        st.write(f"Échecs Kerberos : {stats.get('echouements_kerberos', 0)}")
-        st.write(f"Téléchargements binaires HTTP : {stats.get('telechargements_binaire_http', 0)}")
-        st.write(f"TCP Resets : {stats.get('tcp_resets', 0)}")
-        st.write(f"Nombre d'IPs suspectes : {stats.get('nombre_ips_suspectes', 0)}")
-
-    # Afficher les IPs uniques
-    st.subheader("Liste des IPs Uniques")
-    unique_ips = stats.get("ips_uniques", [])
-    if unique_ips:
-        st.dataframe(pd.DataFrame({"IPs Uniques": unique_ips}))
+    
+    # Affichage des statistiques
+    st.subheader("Statistiques Générales")
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Total Packets", stats.get("total_paquets", 0))
+    col2.metric("Unique IPs", stats.get("nombre_ips_uniques", 0))
+    col3.metric("Kerberos 230", stats.get("echouements_kerberos", 0))
+    col4.metric("HTTP Download", stats.get("telechargements_binaire_http", 0))
+    
+    # MITRE ATT&CK Tactics
+    st.subheader("MITRE ATT&CK Tactics")
+    st.markdown("- **Credential Access**\n- **Command and Control**\n- **Discovery**\n- **Defense Evasion**\n- **Execution**")
+    
+    # Détection des événements
+    st.subheader("Detected Events")
+    detected_events = data.get("detected_events", [])
+    if detected_events:
+        df_events = pd.DataFrame(detected_events)
+        st.dataframe(df_events)
     else:
-        st.info("Aucune IP unique disponible.")
-
-    # Afficher les IPs suspectes
-    st.subheader("Liste des IPs Suspectes")
+        st.info("No detected events.")
+    
+    # Liste des IPs suspectes
+    st.subheader("Suspicious IPs")
     suspicious_ips = stats.get("ips_suspectes", [])
     if suspicious_ips:
-        st.dataframe(pd.DataFrame({"IPs Suspectes": suspicious_ips}))
+        df_suspicious = pd.DataFrame(suspicious_ips, columns=["IP Address", "AbuseIPDB Score"])
+        st.dataframe(df_suspicious)
     else:
-        st.info("Aucune IP suspecte détectée.")
+        st.info("No suspicious IPs detected.")
 
-    # Graphique : Analyse des ports
-    st.subheader("Analyse des Ports")
-    ports_analysis = data.get("ports_analyse", [])
-    if ports_analysis:
-        df_ports = pd.DataFrame(ports_analysis)
-        st.dataframe(df_ports)
-        if "port" in df_ports.columns and "count" in df_ports.columns:
-            st.bar_chart(df_ports.set_index("port")["count"])
-    else:
-        st.info("Aucune donnée d'analyse des ports disponible.")
+    # Rapport Markdown
+    st.subheader("Markdown Report")
+    st.markdown("### 🛡️ Network Analysis Report\n- Analyzed PCAP file and identified suspicious activity")
+    st.button("Download Report")
