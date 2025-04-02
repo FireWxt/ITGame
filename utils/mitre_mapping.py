@@ -1,5 +1,3 @@
-# Ce module permet de mapper les événements réseau analysés avec les tactiques MITRE ATT&CK.
-
 MITRE_MAPPING = {
     "kerberos_error": "Credential Access",
     "tcp_reset": "Defense Evasion",
