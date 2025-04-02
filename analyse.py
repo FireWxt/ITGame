@@ -5,7 +5,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from collections import defaultdict
 from utils.get_pcap import get_pcap
-from utils.MicrosoftFilter import  is_microsoft_ip
+from utils.MicrosoftFilter import  is_microsoft_ip, MICROSOFT_DOMAINS
 from utils.ip_check import check_ip_reputation
 from utils.mitre_mapping import map_event
 from utils.PortAnalyse import analyse_ports
@@ -23,7 +23,7 @@ GEO_DATA = {
 
 # Chargement des variables d'environnement
 load_dotenv()
-'''
+
 # Téléchargement du fichier PCAP depuis le serveur distant
 # try:
 #     get_pcap()
@@ -73,8 +73,13 @@ for packet in capture:
         ip_dst = packet.ip.dst
         proto = packet.highest_layer
 
-        if is_microsoft_ip(ip_src) or is_microsoft_ip(ip_dst):
+         # Intégration du filtrage Microsoft :
+        uri = ""
+        if hasattr(packet, 'http') and hasattr(packet.http, 'request_full_uri'):
+            uri = packet.http.request_full_uri.lower()
+        if is_microsoft_ip(ip_src) or is_microsoft_ip(ip_dst) or any(domain in uri for domain in MICROSOFT_DOMAINS):
             continue
+
 
         details = stats["ip_details"][ip_src]
         details["count"] += 1
