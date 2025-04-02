@@ -1,6 +1,6 @@
 import json
 
-# Liste des domaines Microsoft à filtrer (peut être enrichie)
+# Liste des domaines Microsoft à filtrer 
 MICROSOFT_DOMAINS = [
     "microsoft.com", "msedge.net", "live.com", "windows.com",
     "office365.com", "msn.com", "skype.com", "azure.com",

@@ -4,11 +4,13 @@ import json
 from datetime import datetime
 from dotenv import load_dotenv
 from collections import defaultdict
-from utils.get_pcap import get_pcap
+#from utils.get_pcap import get_pcap
 from utils.MicrosoftFilter import is_microsoft_ip
 from utils.ip_check import check_ip_reputation
 from utils.mitre_mapping import map_event
 from utils.PortAnalyse import analyse_ports
+from utils.mitre_rules import apply_mitre_rules
+
 
 
 # Données de géolocalisation d'exemple
@@ -21,13 +23,14 @@ GEO_DATA = {
 
 # Chargement des variables d'environnement
 load_dotenv()
-
+'''
 # Téléchargement du fichier PCAP depuis le serveur distant
 try:
     get_pcap()
 except Exception as e:
     print(f"[Erreur] Échec du téléchargement du PCAP : {e}")
     exit(1)
+'''
 
 # Chemin du fichier à analyser
 PCAP_FILE = 'logs/capture.pcap'
@@ -79,6 +82,8 @@ for packet in capture:
         details["targeted_machines"].add(ip_dst)
         details["protocols"].add(proto)
 
+        # Ports
+        dst_port = None
         if hasattr(packet, 'tcp'):
             src_port = int(packet.tcp.srcport)
             dst_port = int(packet.tcp.dstport)
@@ -90,21 +95,8 @@ for packet in capture:
                 stats["tcp_resets"] += 1
                 stats["mitre_events"][map_event("tcp_reset")] += 1
 
-        if proto == "HTTP" and hasattr(packet, 'http') and hasattr(packet.http, 'request_full_uri'):
-            if ".bin" in packet.http.request_full_uri:
-                stats["binary_downloads"] += 1
-                stats["mitre_events"][map_event("binary_download")] += 1
-
-        if proto == "KERBEROS" and hasattr(packet, 'kerberos'):
-            if 'KRB5KDC_ERR_PREAUTH_REQUIRED' in packet.kerberos._all_fields:
-                stats["kerberos_failures"] += 1
-                stats["mitre_events"][map_event("kerberos_fail")] += 1
-
-        if proto == "DNS" and hasattr(packet, 'dns') and hasattr(packet.dns, 'qry_name'):
-            domain = packet.dns.qry_name.lower()
-            if len(domain) > 30 or any(ext in domain for ext in ['.xyz', '.top', '.tk']):
-                stats["mitre_events"][map_event("dns_suspicious")] += 1
-                details["reasons"].append(f"Requête DNS suspecte vers {domain}")
+        # Appel des règles MITRE 
+        apply_mitre_rules(packet, proto, ip_src, ip_dst, dst_port, stats, details, LOCAL_NETWORK_PREFIX)
 
     except AttributeError:
         continue
