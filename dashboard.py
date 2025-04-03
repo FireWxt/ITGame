@@ -117,6 +117,8 @@ def generate_pdf(rapport, df_ports, df_mitre, df_ips):
 
     # Graphique des ports
     if not df_ports.empty:
+        # Limiter à 10 ports les plus utilisés
+        df_ports = df_ports.nlargest(10, "count")  # Trier et sélectionner les 10 premiers
         plt.figure(figsize=(10, 4))
         df_ports.set_index("port")["count"].plot(kind="bar", color="skyblue", rot=45)
         plt.title("Top 10 des Ports")
@@ -147,23 +149,27 @@ def generate_pdf(rapport, df_ports, df_mitre, df_ips):
     pdf.ln(35)
 
     # IPs suspectes
+    # IPs suspectes
     pdf.cell(200, 10, txt="Détails des IPs suspectes :", ln=True)
     pdf.ln(5)
-    suspicious_ips = stats.get("ips_suspectes", [])
+
+    # Récupérer les IPs suspectes depuis le rapport JSON
+    suspicious_ips = rapport.get("statistiques", {}).get("ips_suspectes", [])
+    ips_details = rapport.get("ips", {})
+
     if suspicious_ips:
-        for ip in suspicious_ips[:10]:
-            ip_data = next((row for row in df_ips.to_dict("records") if row["Adresse IP"] == ip), {})
+        for ip in suspicious_ips:
+            details = ips_details.get(ip, {})
             pdf.cell(200, 10, txt=f"IP : {ip}", ln=True)
-            pdf.cell(200, 10, txt=f"  - Nombre de paquets : {ip_data.get('Paquets', 0)}", ln=True)
-            pdf.cell(200, 10, txt=f"  - Nombre de ports : {ip_data.get('Nb Ports', 0)}", ln=True)
-            pdf.cell(200, 10, txt=f"  - Risque : {ip_data.get('Risque', 'Inconnu')}", ln=True)
-            pdf.cell(200, 10, txt=f"  - Score : {ip_data.get('Score', 0)}", ln=True)
-            pdf.cell(200, 10, txt=f"  - Raisons : {ip_data.get('Reasons', 'Aucune raison')}", ln=True)
+            pdf.cell(200, 10, txt=f"  - Nombre de paquets : {details.get('count', 0)}", ln=True)
+            pdf.cell(200, 10, txt=f"  - Nombre de ports : {len(details.get('ports', []))}", ln=True)
+            pdf.cell(200, 10, txt=f"  - Risque : {details.get('risk', 'Inconnu')}", ln=True)
+            pdf.cell(200, 10, txt=f"  - Pays : {details.get('country', 'Inconnu')}", ln=True)
+            pdf.cell(200, 10, txt=f"  - Raisons : {', '.join(details.get('reasons', ['Aucune raison']))[:200]}", ln=True)
             pdf.ln(5)
-        pdf.ln(10)
     else:
         pdf.cell(200, 10, txt="Aucune IP suspecte détectée.", ln=True)
-        pdf.ln(10)
+    pdf.ln(10)
 
     # Sauvegarder le PDF
     pdf_path = "rapport_analyse.pdf"
@@ -237,7 +243,7 @@ for ip, details in ips_data.items():
         "Risque": label_risque,
         "Score": score_risque,
         "Pays": details.get("country", "Inconnu"),
-        "Reasons": "; ".join(details["reasons"][:3])  # Affichage limité
+        "Raisons": "; ".join(details["reasons"][:3])  # Affichage limité
     })
 
 
@@ -312,7 +318,7 @@ with onglets[3]:
         st.info("Aucune donnée disponible pour l'analyse comportementale.")
 
 with onglets[4]:
-    st.subheader("Carte de géolocalisation (PyDeck)")
+    st.subheader("Carte de géolocalisation")
     data_map = []
     for ip, details in ips_data.items():
         lat = details.get("latitude")
