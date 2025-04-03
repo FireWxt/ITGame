@@ -111,8 +111,8 @@ def generate_pdf(rapport, df_ports, df_mitre, df_ips):
     stats = rapport.get("statistiques", {})
     pdf.cell(200, 10, txt=f"Total de paquets : {stats.get('total_paquets', 0)}", ln=True)
     pdf.cell(200, 10, txt=f"IPs analysées : {stats.get('ips_analysees', 0)}", ln=True)
-    pdf.cell(200, 10, txt=f"Échecs Kerberos : {stats.get('echouements_kerberos', 0)}", ln=True)
-    pdf.cell(200, 10, txt=f"Téléchargements binaires HTTP : {stats.get('telechargements_binaires_http', 0)}", ln=True)
+    # pdf.cell(200, 10, txt=f"Échecs Kerberos : {stats.get('echouements_kerberos', 0)}", ln=True)
+    # pdf.cell(200, 10, txt=f"Téléchargements binaires HTTP : {stats.get('telechargements_binaires_http', 0)}", ln=True)
     pdf.ln(10)
 
     # Graphique des ports
@@ -146,9 +146,8 @@ def generate_pdf(rapport, df_ports, df_mitre, df_ips):
         pdf.ln(70)
     else:
         pdf.cell(200, 10, txt="Aucune tactique MITRE détectée.", ln=True)
-    pdf.ln(35)
+    pdf.ln(45)
 
-    # IPs suspectes
     # IPs suspectes
     pdf.cell(200, 10, txt="Détails des IPs suspectes :", ln=True)
     pdf.ln(5)
@@ -208,7 +207,7 @@ with col2:
     st.title("Analyse Réseau – Tableau de bord avancé (MITRE ATT&CK)")
 
 # Bouton pour exécuter le script d'analyse
-if st.button("Lancer une nouvelle analyse PCAP"):
+if st.button("Lancer une nouvelle analyse réseau"):
     lancer_analyse()
 
 # Chargement du rapport JSON
@@ -246,37 +245,43 @@ for ip, details in ips_data.items():
         "Raisons": "; ".join(details["reasons"][:3])  # Affichage limité
     })
 
-
 df_ips = pd.DataFrame(liste_ip).sort_values(by="Score", ascending=False)
 
 # Création de plusieurs onglets
-onglets = st.tabs(["Statistiques Générales", "Tactiques MITRE", "IPs Suspectes", "Analyse Comportementale", "Carte"])
+onglets = st.tabs(["Statistiques Générales", "IPs Suspectes", "Analyse Comportementale", "Carte"])
 # Application du style
 styled_df = df_ips.style.applymap(color_risk, subset=["Risque"])
 
 with onglets[0]:
+    suspicious_ips = stats.get("ips_suspectes", [])
     st.subheader("Statistiques Générales")
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total Paquets", stats.get("total_paquets", 0))
-    col2.metric("IPs Analysées", stats.get("ips_analysees", 0))
-    col3.metric("Échecs Kerberos", stats.get("echouements_kerberos", 0))
-    col4.metric("Téléchargements binaires", stats.get("telechargements_binaires_http", 0))
+    col2.metric("Total Paquets", stats.get("total_paquets", 0))
+    col3.metric("IPs Suspectes", len(suspicious_ips))
+    col4.metric("IPs Analysées", stats.get("ips_analysees", 0))
 
-    st.subheader("IPs suspectes identifiées")
-    suspicious_ips = stats.get("ips_suspectes", [])
-    if suspicious_ips:
-        st.write(f"Nombre d'IPs suspectes : {len(suspicious_ips)}")
-        st.write(suspicious_ips)
-    else:
-        st.info("Aucune IP suspecte détectée.")
+    # suspicious_ips = stats.get("ips_suspectes", [])
+    # if suspicious_ips:
+    #     st.markdown('<p style="color:red; font-weight:bold;">Les IPs suivantes sont suspectes :</p>', unsafe_allow_html=True)
+    #     st.write(suspicious_ips)
+    # else:
+    #     st.info("Aucune IP suspecte détectée.")
 
-    st.subheader("Machines possiblement infectées")
+    st.subheader("Machines infectées")
     infected_machines = stats.get("machines_possiblement_infectees", [])
     if infected_machines:
-        st.write("Liste des IP internes ciblées :")
+        # st.write("Liste des IP internes ciblées :")
         st.code("\n".join(infected_machines))
     else:
         st.success("Aucune machine locale ciblée.")
+
+    st.subheader("Tactiques MITRE ATT&CK")
+    if mitre_data:
+        df_mitre = pd.DataFrame(list(mitre_data.items()), columns=["Tactique", "Occurrences"])
+        st.dataframe(df_mitre)
+    else:
+        st.info("Aucune tactique MITRE détectée.")
+        st.subheader("IPs suspectes identifiées")
 
     st.subheader("Top 10 des ports")
     if ports_analyse:
@@ -286,15 +291,6 @@ with onglets[0]:
         st.info("Aucun port analysé dans le rapport.")
 
 with onglets[1]:
-    st.subheader("Tactiques MITRE ATT&CK détectées")
-    if mitre_data:
-        df_mitre = pd.DataFrame(list(mitre_data.items()), columns=["Tactique", "Occurrences"])
-        st.bar_chart(df_mitre.set_index("Tactique")["Occurrences"])
-        st.dataframe(df_mitre)
-    else:
-        st.info("Aucune tactique MITRE détectée.")
-
-with onglets[2]:
     st.subheader("Détails IPs suspectes")
     suspicious_ips = stats.get("ips_suspectes", [])
     if suspicious_ips:
@@ -308,7 +304,7 @@ with onglets[2]:
     else:
         st.info("Aucune IP suspecte recensée.")
 
-with onglets[3]:
+with onglets[2]:
     st.subheader("Analyse Comportementale Avancée")
     if not df_ips.empty:
         df_ips["Adresse IP"] = df_ips.apply(lambda row: format_ip_with_risk(row["Adresse IP"], row["Risque"]), axis=1)
@@ -317,7 +313,7 @@ with onglets[3]:
     else:
         st.info("Aucune donnée disponible pour l'analyse comportementale.")
 
-with onglets[4]:
+with onglets[3]:
     st.subheader("Carte de géolocalisation")
     data_map = []
     for ip, details in ips_data.items():
