@@ -3,6 +3,7 @@ import time
 import os
 import threading
 import pyshark
+import asyncio
 
 def get_pcap(): 
     url = f"http://93.127.203.48:5000/pcap/latest"
@@ -23,21 +24,9 @@ def pcap_listener(interval=1800):
     """
     Fonction pour écouter les paquets sur le réseau et les enregistrer dans un fichier PCAP.
     """
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     while True:
         get_pcap()
         time.sleep(interval)
-
-if __name__ == "__main__":
-
-    pass
-    # """ Lancement de l'écouteur dans un thread séparé
-    # pour éviter de bloquer le programme principal"""
-    # listener_thread = threading.Thread(target=pcap_listener, daemon=True)
-    # listener_thread.start()
-
-    # print (print("[PCAP] Listener lancé. Mise à jour toutes les 30 minutes."))
-
-    # while True:
-    #     time.sleep(3600)
-
-

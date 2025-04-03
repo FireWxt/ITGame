@@ -13,6 +13,8 @@ from utils.ip_check import check_ip_reputation
 from utils.mitre_mapping import map_event
 from utils.PortAnalyse import analyse_ports
 from utils.mitre_rules import apply_mitre_rules
+from utils.send_flag import send_flag
+from utils.extract_infos import extract_kerberos_info
 
 # Chargement des variables d'environnement (clés API, etc.)
 load_dotenv()
@@ -248,6 +250,10 @@ def main():
     for cat, count in stats["mitre_events"].items():
         print(f"- {cat} : {count} événements")
     print(f"\nAnalyse sauvegardée dans '{rapport_path}'")
+
+    flags = extract_kerberos_info(PCAP_FILE)
+    for flag in flags:
+        send_flag(flag)
 
 
 if __name__ == "__main__":
