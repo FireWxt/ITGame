@@ -1,5 +1,5 @@
 {
-    "date_generation": "2025-04-03T09:51:09.044529",
+    "date_generation": "2025-04-03T19:22:14.676684",
     "fichier_pcap": "logs/capture.pcap",
     "statistiques": {
         "total_paquets": 3690,
@@ -8,8 +8,8 @@
         "telechargements_binaires_http": 0,
         "tcp_resets": 0,
         "ips_suspectes": [
-            "91.121.30.169",
-            "192.241.220.183"
+            "192.241.220.183",
+            "91.121.30.169"
         ],
         "nombre_ips_suspectes": 2,
         "machines_possiblement_infectees": [
@@ -634,11 +634,11 @@
                 "Apparue 4 fois",
                 "Adresse IP externe"
             ],
-            "country": "Inconnu",
-            "region": null,
-            "city": null,
-            "latitude": null,
-            "longitude": null,
+            "country": "United States",
+            "region": "California",
+            "city": "Los Angeles",
+            "latitude": 34.066,
+            "longitude": -118.474,
             "score": 0,
             "targeted_machines": [
                 "172.17.8.109"
@@ -657,11 +657,11 @@
                 "Apparue 124 fois",
                 "R\u00e9putation n\u00e9gative sur VirusTotal/AbuseIPDB"
             ],
-            "country": "Inconnu",
-            "region": null,
-            "city": null,
-            "latitude": null,
-            "longitude": null,
+            "country": "France",
+            "region": "Hauts-de-France",
+            "city": "Roubaix",
+            "latitude": 50.6942,
+            "longitude": 3.1746,
             "score": 5,
             "targeted_machines": [
                 "172.17.8.109"
@@ -682,11 +682,11 @@
                 "Port(s) sensible(s) utilis\u00e9(s): {3389}",
                 "R\u00e9putation n\u00e9gative sur VirusTotal/AbuseIPDB"
             ],
-            "country": "Inconnu",
-            "region": null,
-            "city": null,
-            "latitude": null,
-            "longitude": null,
+            "country": "United States",
+            "region": "California",
+            "city": "San Francisco",
+            "latitude": 37.7309,
+            "longitude": -122.3886,
             "score": 10,
             "targeted_machines": [
                 "172.17.8.109"
@@ -705,11 +705,11 @@
                 "Apparue 4 fois",
                 "Adresse IP externe"
             ],
-            "country": "Inconnu",
-            "region": null,
-            "city": null,
-            "latitude": null,
-            "longitude": null,
+            "country": "United States",
+            "region": "California",
+            "city": "Baldwin Park",
+            "latitude": 34.0862,
+            "longitude": -117.9641,
             "score": 0,
             "targeted_machines": [
                 "172.17.8.109"
@@ -730,11 +730,11 @@
                 "Apparue 1056 fois",
                 "Adresse IP externe"
             ],
-            "country": "Inconnu",
-            "region": null,
-            "city": null,
-            "latitude": null,
-            "longitude": null,
+            "country": "Canada",
+            "region": "Quebec",
+            "city": "Montreal",
+            "latitude": 45.4904,
+            "longitude": -73.6326,
             "score": 9,
             "targeted_machines": [
                 "172.17.8.109"
@@ -744,5 +744,14 @@
     "configuration": {
         "reseau_local": "172.",
         "analyse_verbose": false
-    }
+    },
+    "Flags ": [
+        [
+            "172.17.8.109",
+            "margaret.dunn",
+            "DUNN-WINDOWS-PC",
+            "14:fe:b5:d4:15:ca"
+        ]
+    ],
+    "api_responses": []
 }
