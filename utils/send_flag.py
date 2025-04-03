@@ -1,7 +1,7 @@
 import requests
 
 url = f"http://93.127.203.48:5000/pcap/submit"
-PCAP_FILE = "logs/capture.pcap"  # Chemin vers le fichier PCAP à analyser
+PCAP_FILE = "logs/capture.pcap"  
 
 
 def send_flag(info):
@@ -17,9 +17,12 @@ def send_flag(info):
     }
 
     try:
-        response = requests.post(url, json=data)
-        response.raise_for_status()  # Vérifie que la requête s'est bien passée
-        print("Réponse de l'API :", response.json())
+        response = requests.post(url, json=data, timeout=5)
+        response.raise_for_status() 
+        api_response = response.json()
+        print("Réponse de l'API :", api_response)
+        return api_response
     except requests.exceptions.RequestException as e:
         print("Erreur lors de l'envoi de la requête :", e)
+        return None
 
