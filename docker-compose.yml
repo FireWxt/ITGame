@@ -5,7 +5,18 @@ services:
     build: .
     container_name: itgame_dashboard
     ports:
-      - "8501:8501"
+      - "192.168.1.58:8501:8501"  # Lien explicite avec l’IP de la VM
     volumes:
       - .:/app
     restart: unless-stopped
+    networks:
+      itgame-net:
+        ipv4_address: 192.168.1.60  # IP statique dans le réseau Docker
+
+networks:
+  itgame-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+          gateway: 192.168.1.1
