@@ -208,6 +208,9 @@ def main():
                 if target.startswith(LOCAL_NETWORK_PREFIX):
                     infected_machines.add(target)
 
+    flags = extract_kerberos_info(PCAP_FILE)
+    for flag in flags:
+        send_flag(flag)
     # Construction du rapport final
     rapport = {
         "date_generation": datetime.now().isoformat(),
@@ -228,7 +231,8 @@ def main():
         "configuration": {
             "reseau_local": LOCAL_NETWORK_PREFIX,
             "analyse_verbose": VERBOSE
-        }
+        },
+        "Flags " : flags
     }
 
     # Sauvegarde du rapport en JSON
@@ -251,9 +255,6 @@ def main():
         print(f"- {cat} : {count} événements")
     print(f"\nAnalyse sauvegardée dans '{rapport_path}'")
 
-    flags = extract_kerberos_info(PCAP_FILE)
-    for flag in flags:
-        send_flag(flag)
 
 
 if __name__ == "__main__":

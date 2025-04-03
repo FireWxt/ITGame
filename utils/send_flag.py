@@ -20,6 +20,8 @@ def send_flag(info):
         response = requests.post(url, json=data)
         response.raise_for_status()  # Vérifie que la requête s'est bien passée
         print("Réponse de l'API :", response.json())
+        apiresponse = response.json()
+        return apiresponse
     except requests.exceptions.RequestException as e:
         print("Erreur lors de l'envoi de la requête :", e)
 
