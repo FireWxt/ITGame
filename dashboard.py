@@ -4,6 +4,8 @@ import pydeck as pdk
 import json
 import subprocess
 import os
+from fpdf import FPDF
+import matplotlib.pyplot as plt
 
 # Configuration de la page
 st.set_page_config(
@@ -80,8 +82,124 @@ def calcul_score(details):
     # Score final borné à 100
     return min(base_score, 100)
 
-# Titre principal
-st.title("Analyse Réseau – Tableau de bord avancé (MITRE ATT&CK)")
+# Fonction pour colorer uniquement le texte en fonction de la valeur
+def color_risk(val):
+    if val == "Faible":
+        return "color: green;"
+    elif val == "Moyen":
+        return "color: orange;"
+    elif val == "Élevé":
+        return "color: red;"
+    elif val == "Critique":
+        return "color: #8B0000;"
+    return ""
+
+def generate_pdf(rapport, df_ports, df_mitre, df_ips):
+    """
+    Génère un rapport PDF contenant les statistiques générales, les IPs suspectes,
+    les tactiques MITRE ATT&CK et les graphiques.
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="Rapport d'Analyse Réseau", ln=True, align="C")
+    pdf.ln(10)
+
+    # Statistiques générales
+    pdf.set_font("Arial", size=10)
+    pdf.cell(200, 10, txt="Statistiques Générales :", ln=True)
+    stats = rapport.get("statistiques", {})
+    pdf.cell(200, 10, txt=f"Total de paquets : {stats.get('total_paquets', 0)}", ln=True)
+    pdf.cell(200, 10, txt=f"IPs analysées : {stats.get('ips_analysees', 0)}", ln=True)
+    pdf.cell(200, 10, txt=f"Échecs Kerberos : {stats.get('echouements_kerberos', 0)}", ln=True)
+    pdf.cell(200, 10, txt=f"Téléchargements binaires HTTP : {stats.get('telechargements_binaires_http', 0)}", ln=True)
+    pdf.ln(10)
+
+    # Graphique des ports
+    if not df_ports.empty:
+        plt.figure(figsize=(10, 4))
+        df_ports.set_index("port")["count"].plot(kind="bar", color="skyblue", rot=45)
+        plt.title("Top 10 des Ports")
+        plt.xlabel("Port")
+        plt.ylabel("Nombre de connexions")
+        plt.tight_layout()
+        plt.savefig("ports_chart.png")
+        plt.close()
+        pdf.cell(200, 10, txt="Graphique : Top 10 des Ports", ln=True, align="C")
+        pdf.image("ports_chart.png", x=10, y=pdf.get_y() + 5, w=180)
+        pdf.ln(70)
+
+    # Tactiques MITRE ATT&CK
+    pdf.ln(5)
+    if not df_mitre.empty:
+        plt.figure(figsize=(10, 4))
+        df_mitre.set_index("Tactique")["Occurrences"].plot(kind="bar", color="orange")
+        plt.title("Tactiques MITRE ATT&CK")
+        plt.xlabel("Tactique")
+        plt.ylabel("Occurrences")
+        plt.tight_layout()
+        plt.savefig("mitre_chart.png")
+        plt.close()
+        pdf.image("mitre_chart.png", x=10, y=pdf.get_y() + 5, w=180)
+        pdf.ln(70)
+    else:
+        pdf.cell(200, 10, txt="Aucune tactique MITRE détectée.", ln=True)
+    pdf.ln(35)
+
+    # IPs suspectes
+    pdf.cell(200, 10, txt="Détails des IPs suspectes :", ln=True)
+    pdf.ln(5)
+    suspicious_ips = stats.get("ips_suspectes", [])
+    if suspicious_ips:
+        for ip in suspicious_ips[:10]:
+            ip_data = next((row for row in df_ips.to_dict("records") if row["Adresse IP"] == ip), {})
+            pdf.cell(200, 10, txt=f"IP : {ip}", ln=True)
+            pdf.cell(200, 10, txt=f"  - Nombre de paquets : {ip_data.get('Paquets', 0)}", ln=True)
+            pdf.cell(200, 10, txt=f"  - Nombre de ports : {ip_data.get('Nb Ports', 0)}", ln=True)
+            pdf.cell(200, 10, txt=f"  - Risque : {ip_data.get('Risque', 'Inconnu')}", ln=True)
+            pdf.cell(200, 10, txt=f"  - Score : {ip_data.get('Score', 0)}", ln=True)
+            pdf.cell(200, 10, txt=f"  - Raisons : {ip_data.get('Reasons', 'Aucune raison')}", ln=True)
+            pdf.ln(5)
+        pdf.ln(10)
+    else:
+        pdf.cell(200, 10, txt="Aucune IP suspecte détectée.", ln=True)
+        pdf.ln(10)
+
+    # Sauvegarder le PDF
+    pdf_path = "rapport_analyse.pdf"
+    pdf.output(pdf_path)
+    return pdf_path
+
+# Fonction pour ajouter un point coloré à côté de l'IP en fonction du risque
+def format_ip_with_risk(ip, risk):
+    if risk == "Faible":
+        return f'<span style="color: green;">●</span> {ip}'
+    elif risk == "Moyen":
+        return f'<span style="color: orange;">●</span> {ip}'
+    elif risk == "Élevé":
+        return f'<span style="color: red;">●</span> {ip}'
+    elif risk == "Critique":
+        return f'<span style="color: #8B0000;">●</span> {ip}'
+    return ip
+
+# Fonction pour colorer uniquement le texte en fonction de la valeur
+def format_risk_with_color(val):
+    if val == "Faible":
+        return '<span style="color: green;">Faible</span>'
+    elif val == "Moyen":
+        return '<span style="color: orange;">Moyen</span>'
+    elif val == "Élevé":
+        return '<span style="color: red;">Élevé</span>'
+    elif val == "Critique":
+        return '<span style="color: #8B0000;">Critique</span>'
+    return val
+
+# Afficher le logo en haut à gauche
+col1, col2 = st.columns([1, 9])
+with col1:
+    st.image("assets/logo.png", width=150)
+with col2:
+    st.title("Analyse Réseau – Tableau de bord avancé (MITRE ATT&CK)")
 
 # Bouton pour exécuter le script d'analyse
 if st.button("Lancer une nouvelle analyse PCAP"):
@@ -122,10 +240,13 @@ for ip, details in ips_data.items():
         "Reasons": "; ".join(details["reasons"][:3])  # Affichage limité
     })
 
+
 df_ips = pd.DataFrame(liste_ip).sort_values(by="Score", ascending=False)
 
 # Création de plusieurs onglets
 onglets = st.tabs(["Statistiques Générales", "Tactiques MITRE", "IPs Suspectes", "Analyse Comportementale", "Carte"])
+# Application du style
+styled_df = df_ips.style.applymap(color_risk, subset=["Risque"])
 
 with onglets[0]:
     st.subheader("Statistiques Générales")
@@ -173,7 +294,9 @@ with onglets[2]:
     if suspicious_ips:
         df_susp = df_ips[df_ips["Adresse IP"].isin(suspicious_ips)].copy()
         if not df_susp.empty:
-            st.dataframe(df_susp.reset_index(drop=True), use_container_width=True)
+            df_susp["Adresse IP"] = df_susp.apply(lambda row: format_ip_with_risk(row["Adresse IP"], row["Risque"]), axis=1)
+            df_susp["Risque"] = df_susp["Risque"].apply(format_risk_with_color)
+            st.write(df_susp.to_html(escape=False, index=False), unsafe_allow_html=True)
         else:
             st.info("Aucune correspondance dans le DataFrame.")
     else:
@@ -181,14 +304,12 @@ with onglets[2]:
 
 with onglets[3]:
     st.subheader("Analyse Comportementale Avancée")
-    st.dataframe(df_ips.reset_index(drop=True), use_container_width=True)
-    st.markdown("""
-    Critères de calcul du score :
-    - Nombre total de paquets par IP
-    - Ports sensibles (445, 3389)
-    - Réputation négative
-    - Nombre de raisons (alerts) détectées
-    """)
+    if not df_ips.empty:
+        df_ips["Adresse IP"] = df_ips.apply(lambda row: format_ip_with_risk(row["Adresse IP"], row["Risque"]), axis=1)
+        df_ips["Risque"] = df_ips["Risque"].apply(format_risk_with_color)
+        st.write(df_ips.to_html(escape=False, index=False), unsafe_allow_html=True)
+    else:
+        st.info("Aucune donnée disponible pour l'analyse comportementale.")
 
 with onglets[4]:
     st.subheader("Carte de géolocalisation (PyDeck)")
@@ -223,16 +344,14 @@ with onglets[4]:
         st.info("Aucune donnée de latitude/longitude n’a été trouvée dans le rapport.")
 
 st.markdown("---")
-st.subheader("Télécharger le rapport JSON")
-fichier_rapport = "data/rapport_analyse.json"
-if os.path.exists(fichier_rapport):
-    with open(fichier_rapport, "rb") as f:
-        st.download_button(
-            label="Télécharger le rapport",
-            data=f,
-            file_name="rapport_analyse.json"
-        )
-else:
-    st.info("Le fichier rapport_analyse.json est introuvable.")
+st.subheader("Télécharger le rapport")
+pdf_path = generate_pdf(rapport, pd.DataFrame(ports_analyse), pd.DataFrame(list(mitre_data.items()), columns=["Tactique", "Occurrences"]), df_ips)
+with open(pdf_path, "rb") as f:
+    st.download_button(
+        label="Télécharger le rapport PDF",
+        data=f,
+        file_name="rapport_analyse.pdf",
+        mime="application/pdf"
+    )
 
 st.markdown("Fin de l’analyse – Tableau de bord avancé.")
