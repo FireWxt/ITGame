@@ -103,11 +103,11 @@ def main():
     """
 
     # (Optionnel) : Tenter de télécharger le fichier PCAP s'il n'est pas déjà local
-    # try:
-    #     get_pcap()
-    # except Exception as e:
-    #     print(f"[Erreur] Échec du téléchargement du PCAP : {e}")
-    #     return
+    try:
+        get_pcap()
+    except Exception as e:
+        print(f"[Erreur] Échec du téléchargement du PCAP : {e}")
+        return
 
     # Vérifie l'existence du fichier PCAP
     if not os.path.exists(PCAP_FILE):
